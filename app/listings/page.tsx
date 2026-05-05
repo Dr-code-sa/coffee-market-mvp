@@ -7,10 +7,15 @@ import { supabase } from "@/lib/supabase";
 type Listing = {
   id: string;
   title: string;
-  price: string;
-  city: string;
+  category: string;
+  brand: string;
+  equipment_type: string;
   condition: string;
+  city: string;
+  price: string;
   phone: string;
+  notes: string;
+  image_url: string;
   created_at: string;
 };
 
@@ -25,12 +30,7 @@ export default function ListingsPage() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error(error);
-      } else {
-        setListings(data || []);
-      }
-
+      if (!error) setListings(data || []);
       setLoading(false);
     }
 
@@ -43,161 +43,123 @@ export default function ListingsPage() {
         minHeight: "100vh",
         padding: "40px 8%",
         direction: "rtl",
-        fontFamily: "Arial, sans-serif",
+        fontFamily: "Arial",
         background: "linear-gradient(135deg, #020617, #111827)",
         color: "white",
       }}
     >
-      <header
+      <Link href="/" style={{ color: "#d1d5db", textDecoration: "none" }}>
+        ← رجوع للرئيسية
+      </Link>
+
+      <h1 style={{ marginTop: 30 }}>تصفح معدات القهوة</h1>
+
+      <Link
+        href="/add-listing"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 45,
-          gap: 20,
-          flexWrap: "wrap",
+          display: "inline-block",
+          margin: "20px 0",
+          background: "#f59e0b",
+          color: "#111827",
+          padding: "12px 18px",
+          borderRadius: 10,
+          textDecoration: "none",
+          fontWeight: 800,
         }}
       >
-        <div>
-          <Link
-            href="/"
-            style={{
-              color: "#d1d5db",
-              textDecoration: "none",
-              fontSize: 15,
-            }}
-          >
-            ← رجوع للرئيسية
-          </Link>
+        + أضف إعلان جديد
+      </Link>
 
-          <h1 style={{ marginTop: 20, marginBottom: 8, fontSize: 38 }}>
-            تصفح معدات القهوة
-          </h1>
-
-          <p style={{ color: "#9ca3af", margin: 0 }}>
-            معدات قهوة جديدة ومستعملة مع أسعار واضحة وتواصل مباشر.
-          </p>
-        </div>
-
-        <Link
-          href="/add-listing"
+      {loading ? (
+        <p>جاري التحميل...</p>
+      ) : (
+        <section
           style={{
-            background: "#f59e0b",
-            color: "#111827",
-            padding: "13px 20px",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 800,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: 22,
           }}
         >
-          + أضف إعلان جديد
-        </Link>
-      </header>
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 22,
-        }}
-      >
-        {loading ? (
-          <p style={{ color: "#d1d5db" }}>جاري تحميل الإعلانات...</p>
-        ) : listings.length === 0 ? (
-          <div
-            style={{
-              background: "#111827",
-              border: "1px solid #1f2937",
-              borderRadius: 18,
-              padding: 30,
-              color: "#d1d5db",
-            }}
-          >
-            لا توجد إعلانات حتى الآن.
-          </div>
-        ) : (
-          listings.map((item) => (
+          {listings.map((item) => (
             <div
               key={item.id}
               style={{
                 background: "#111827",
                 border: "1px solid #1f2937",
                 borderRadius: 18,
-                padding: 24,
-                color: "white",
+                overflow: "hidden",
                 boxShadow: "0 14px 35px rgba(0,0,0,0.35)",
               }}
             >
-              <div
-                style={{
-                  display: "inline-block",
-                  background: "rgba(245, 158, 11, 0.12)",
-                  color: "#f59e0b",
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  marginBottom: 15,
-                }}
-              >
-                إعلان تمت مراجعته
+              {item.image_url && (
+                <img
+                  src={item.image_url}
+                  alt={item.title}
+                  style={{
+                    width: "100%",
+                    height: 210,
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              )}
+
+              <div style={{ padding: 22 }}>
+                <div
+                  style={{
+                    display: "inline-block",
+                    background: "rgba(245,158,11,0.12)",
+                    color: "#f59e0b",
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    marginBottom: 12,
+                  }}
+                >
+                  {item.category}
+                </div>
+
+                <h2 style={{ margin: "0 0 10px", fontSize: 22 }}>
+                  {item.brand} - {item.equipment_type}
+                </h2>
+
+                <p style={{ color: "#f59e0b", fontWeight: 900, fontSize: 21 }}>
+                  {item.price} ريال
+                </p>
+
+                <p style={{ color: "#d1d5db" }}>📍 {item.city}</p>
+                <p style={{ color: "#d1d5db" }}>⚙️ {item.condition}</p>
+
+                {item.notes && (
+                  <p style={{ color: "#9ca3af", lineHeight: 1.7 }}>
+                    {item.notes}
+                  </p>
+                )}
+
+                <a
+                  href={`https://wa.me/966${item.phone}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "block",
+                    textAlign: "center",
+                    marginTop: 16,
+                    background: "#22c55e",
+                    color: "white",
+                    padding: "12px",
+                    borderRadius: 10,
+                    textDecoration: "none",
+                    fontWeight: 800,
+                  }}
+                >
+                  تواصل واتساب
+                </a>
               </div>
-
-              <h2
-                style={{
-                  margin: "0 0 12px",
-                  fontSize: 24,
-                  lineHeight: 1.4,
-                }}
-              >
-                {item.title}
-              </h2>
-
-              <p
-                style={{
-                  color: "#f59e0b",
-                  fontWeight: 900,
-                  fontSize: 22,
-                  margin: "0 0 18px",
-                }}
-              >
-                {item.price} ريال
-              </p>
-
-              <div
-                style={{
-                  display: "grid",
-                  gap: 10,
-                  marginBottom: 20,
-                  color: "#d1d5db",
-                  fontSize: 15,
-                }}
-              >
-                <p style={{ margin: 0 }}>📍 المدينة: {item.city}</p>
-                <p style={{ margin: 0 }}>⚙️ الحالة: {item.condition}</p>
-              </div>
-
-              <a
-                href={`https://wa.me/966${item.phone}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "block",
-                  textAlign: "center",
-                  background: "#22c55e",
-                  color: "white",
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  textDecoration: "none",
-                  fontWeight: 800,
-                }}
-              >
-                تواصل واتساب
-              </a>
             </div>
-          ))
-        )}
-      </section>
+          ))}
+        </section>
+      )}
     </main>
   );
 }
