@@ -16,6 +16,8 @@ type Listing = {
   phone: string;
   notes: string;
   image_url: string;
+  status: string;
+  is_verified: boolean;
   created_at: string;
 };
 
@@ -28,9 +30,15 @@ export default function ListingsPage() {
       const { data, error } = await supabase
         .from("listings")
         .select("*")
+        .eq("status", "published")
         .order("created_at", { ascending: false });
 
-      if (!error) setListings(data || []);
+      if (error) {
+        console.error(error);
+      } else {
+        setListings(data || []);
+      }
+
       setLoading(false);
     }
 
@@ -43,7 +51,7 @@ export default function ListingsPage() {
         minHeight: "100vh",
         padding: "40px 8%",
         direction: "rtl",
-        fontFamily: "Arial",
+        fontFamily: "Arial, sans-serif",
         background: "linear-gradient(135deg, #020617, #111827)",
         color: "white",
       }}
@@ -52,26 +60,43 @@ export default function ListingsPage() {
         ← رجوع للرئيسية
       </Link>
 
-      <h1 style={{ marginTop: 30 }}>تصفح معدات القهوة</h1>
+      <header style={{ marginTop: 30, marginBottom: 35 }}>
+        <h1 style={{ fontSize: 38, marginBottom: 10 }}>تصفح معدات القهوة</h1>
+        <p style={{ color: "#9ca3af" }}>
+          الإعلانات المنشورة فقط بعد مراجعتها من إدارة المنصة.
+        </p>
 
-      <Link
-        href="/add-listing"
-        style={{
-          display: "inline-block",
-          margin: "20px 0",
-          background: "#f59e0b",
-          color: "#111827",
-          padding: "12px 18px",
-          borderRadius: 10,
-          textDecoration: "none",
-          fontWeight: 800,
-        }}
-      >
-        + أضف إعلان جديد
-      </Link>
+        <Link
+          href="/add-listing"
+          style={{
+            display: "inline-block",
+            marginTop: 20,
+            background: "#f59e0b",
+            color: "#111827",
+            padding: "12px 18px",
+            borderRadius: 10,
+            textDecoration: "none",
+            fontWeight: 800,
+          }}
+        >
+          + أضف إعلان جديد
+        </Link>
+      </header>
 
       {loading ? (
-        <p>جاري التحميل...</p>
+        <p>جاري تحميل الإعلانات...</p>
+      ) : listings.length === 0 ? (
+        <div
+          style={{
+            background: "#111827",
+            border: "1px solid #1f2937",
+            borderRadius: 18,
+            padding: 28,
+            color: "#d1d5db",
+          }}
+        >
+          لا توجد إعلانات منشورة حاليًا.
+        </div>
       ) : (
         <section
           style={{
@@ -114,22 +139,47 @@ export default function ListingsPage() {
                     borderRadius: 999,
                     fontSize: 13,
                     fontWeight: 700,
-                    marginBottom: 12,
+                    marginBottom: 10,
                   }}
                 >
                   {item.category}
                 </div>
 
-                <h2 style={{ margin: "0 0 10px", fontSize: 22 }}>
+                {item.is_verified && (
+                  <div
+                    style={{
+                      display: "inline-block",
+                      background: "rgba(34,197,94,0.12)",
+                      color: "#22c55e",
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      marginRight: 8,
+                      marginBottom: 10,
+                    }}
+                  >
+                    إعلان موثق
+                  </div>
+                )}
+
+                <h2 style={{ margin: "10px 0", fontSize: 22 }}>
                   {item.brand} - {item.equipment_type}
                 </h2>
 
-                <p style={{ color: "#f59e0b", fontWeight: 900, fontSize: 21 }}>
+                <p
+                  style={{
+                    color: "#f59e0b",
+                    fontWeight: 900,
+                    fontSize: 22,
+                    margin: "12px 0",
+                  }}
+                >
                   {item.price} ريال
                 </p>
 
-                <p style={{ color: "#d1d5db" }}>📍 {item.city}</p>
-                <p style={{ color: "#d1d5db" }}>⚙️ {item.condition}</p>
+                <p style={{ color: "#d1d5db" }}>📍 المدينة: {item.city}</p>
+                <p style={{ color: "#d1d5db" }}>⚙️ الحالة: {item.condition}</p>
 
                 {item.notes && (
                   <p style={{ color: "#9ca3af", lineHeight: 1.7 }}>
